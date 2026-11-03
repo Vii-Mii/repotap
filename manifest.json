@@ -5,9 +5,7 @@
   "description": "Commit LeetCode, HackerRank & GeeksForGeeks accepted solutions to GitHub — structured, annotated, on your terms.",
   "permissions": [
     "storage",
-    "tabs",
-    "notifications",
-    "activeTab"
+    "notifications"
   ],
   "host_permissions": [
     "https://*.leetcode.com/*",

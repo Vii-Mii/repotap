@@ -2,6 +2,11 @@
 
 > Commit your LeetCode, HackerRank & GeeksForGeeks accepted solutions to GitHub — structured, annotated, on your terms.
 
+<p>
+  <img src="docs/screenshot-commit.png" alt="RepoTap commit popup" width="49%">
+  <img src="docs/screenshot-github.png" alt="Solution committed to GitHub with notes" width="49%">
+</p>
+
 ## Features
 - 🚀 Popup opens automatically when a solution is accepted (LeetCode, HackerRank, GeeksForGeeks)
 - ✅ Commit it, or ✕ dismiss it — nothing is pushed without your say-so
@@ -14,7 +19,10 @@
 ## User Guide
 
 ### 1. Install
-- **Chrome Web Store:** search for **RepoTap** and click *Add to Chrome*
+- **Chrome Web Store:** coming soon — the link will be added here once it is live.
+- **From source:**
+  1. `npm install && npm run build`
+  2. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `dist` folder.
 
 Tip: pin RepoTap (puzzle-piece icon → pin) so the badge counter is always visible.
 
@@ -66,11 +74,15 @@ Appending a new version adds a `# ----…----` / `# Next Solution Version` divid
 - **Popup didn't open on its own:** Chrome sometimes blocks this; click the RepoTap icon or the desktop notification.
 
 ### Privacy
-RepoTap has no backend. Your token and settings are stored in Chrome's local extension storage and are only sent to `api.github.com`. Solution code is read from the problem page only after an accepted submission.
-
+RepoTap has no backend. Your token and settings are stored in Chrome's local extension storage and are only sent to `api.github.com`. Solution code is read from the problem page only after an accepted submission. Full details: [PRIVACY.md](PRIVACY.md).
 
 ## Tech Stack
 - Manifest V3 + Chrome APIs
 - React 18 + Vite
 - Tailwind CSS (dark mode)
 - GitHub REST API (direct, no backend)
+
+## License
+[MIT](LICENSE)
+
+RepoTap is an independent project and is not affiliated with or endorsed by LeetCode, HackerRank, GeeksforGeeks or GitHub.

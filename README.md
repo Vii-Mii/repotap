@@ -2,13 +2,15 @@
 
 > Commit your LeetCode, HackerRank & GeeksForGeeks accepted solutions to GitHub — structured, annotated, on your terms.
 
+[![Available in the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install%20RepoTap-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/dilemmdpmhbmopomfjopbknneocodpna)
+
 <p>
   <img src="docs/screenshot-commit.png" alt="RepoTap commit popup" width="49%">
   <img src="docs/screenshot-github.png" alt="Solution committed to GitHub with notes" width="49%">
 </p>
 
 ## Features
-- 🚀 Popup opens automatically when a solution is accepted (LeetCode, HackerRank, GeeksForGeeks)
+- 🚀 Popup opens automatically when a submission is accepted (LeetCode, HackerRank, GeeksForGeeks) — test runs are ignored
 - ✅ Commit it, or ✕ dismiss it — nothing is pushed without your say-so
 - 📁 Simple layout: `<repo>/<directory>/<problem-slug>.<ext>` (e.g. `two-pointer/two-sum.py`)
 - 📝 Just the solution; time & space complexity, approach and tags are appended as comments (only if provided)
@@ -19,7 +21,7 @@
 ## User Guide
 
 ### 1. Install
-- **Chrome Web Store:** coming soon — the link will be added here once it is live.
+- **Chrome Web Store:** [**Install RepoTap**](https://chromewebstore.google.com/detail/dilemmdpmhbmopomfjopbknneocodpna) — click *Add to Chrome*.
 - **From source:**
   1. `npm install && npm run build`
   2. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `dist` folder.
@@ -75,6 +77,15 @@ Appending a new version adds a `# ----…----` / `# Next Solution Version` divid
 
 ### Privacy
 RepoTap has no backend. Your token and settings are stored in Chrome's local extension storage and are only sent to `api.github.com`. Solution code is read from the problem page only after an accepted submission. Full details: [PRIVACY.md](PRIVACY.md).
+
+## Development
+```bash
+npm install
+npm run dev       # watch mode, rebuilds into dist/
+npm run build     # production build
+npm run package   # build + repotap.zip (Chrome Web Store upload)
+```
+Load the `dist/` folder via `chrome://extensions` → **Developer mode** → **Load unpacked**, and reload the extension after each rebuild.
 
 ## Tech Stack
 - Manifest V3 + Chrome APIs

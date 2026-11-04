@@ -11,7 +11,7 @@ import {
 import TagSelector from '../components/TagSelector.jsx';
 import ComplexityPicker from '../components/ComplexityPicker.jsx';
 import { PLATFORM_META, DIFFICULTY_COLORS } from '../../lib/utils.js';
-import { getExtension } from '../../lib/github.js';
+import { resolveExtension } from '../../lib/language.js';
 import { removePendingById, removePendingSolution } from '../../lib/storage.js';
 
 const VERSION_OPTIONS = [
@@ -66,7 +66,7 @@ export default function CommitReview({ pending, onCommitted, onDismiss }) {
   const platformMeta = PLATFORM_META[solution.platform] || {};
   const diff = (solution.difficulty || '').toLowerCase();
   const diffColor = DIFFICULTY_COLORS[diff] || DIFFICULTY_COLORS.unknown;
-  const ext = getExtension(solution.language);
+  const ext = resolveExtension(solution);
   const previewPath = `${targetDirectory ? targetDirectory.replace(/^\/+|\/+$/g, '') + '/' : ''}${solution.slug}.${ext}`;
 
   function resetForm() {

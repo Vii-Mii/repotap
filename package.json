@@ -1,6 +1,6 @@
 {
   "name": "repotap-extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Commit your coding solutions to GitHub — structured, annotated, on your terms.",
   "scripts": {

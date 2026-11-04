@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "RepoTap",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Commit LeetCode, HackerRank & GeeksForGeeks accepted solutions to GitHub — structured, annotated, on your terms.",
   "permissions": [
     "storage",

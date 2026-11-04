@@ -4,65 +4,18 @@
  */
 
 import { buildSingleSolutionContent, appendNewVersionContent } from './utils.js';
+import { resolveExtension } from './language.js';
 
 const GITHUB_API = 'https://api.github.com';
 
 // ── Language → File Extension ─────────────────────────────────────────────
 
-const LANG_EXT = {
-  'Python':       'py',
-  'Python3':      'py',
-  'Python 3':     'py',
-  'JavaScript':   'js',
-  'TypeScript':   'ts',
-  'Java':         'java',
-  'C++':          'cpp',
-  'C':            'c',
-  'C#':           'cs',
-  'Go':           'go',
-  'Rust':         'rs',
-  'Ruby':         'rb',
-  'Swift':        'swift',
-  'Kotlin':       'kt',
-  'Scala':        'scala',
-  'PHP':          'php',
-  'SQL':          'sql',
-  'MySQL':        'sql',
-  'PostgreSQL':   'sql',
-  'R':            'r',
-  'Bash':         'sh',
-  'Shell':        'sh',
-  'Dart':         'dart',
-};
-
-export function getExtension(language) {
-  const lang = (language || '').trim();
-  if (LANG_EXT[lang]) return LANG_EXT[lang];
-
-  // Platforms report variants like "C++14", "Java 8", "Python 3.10"
-  const l = lang.toLowerCase();
-  if (l.startsWith('python')) return 'py';
-  if (l.startsWith('c++') || l.startsWith('cpp')) return 'cpp';
-  if (l.startsWith('c#')) return 'cs';
-  if (l.startsWith('javascript') || l.startsWith('node')) return 'js';
-  if (l.startsWith('typescript')) return 'ts';
-  if (l.startsWith('java')) return 'java';
-  if (l.startsWith('golang') || l === 'go' || l.startsWith('go ')) return 'go';
-  if (l.startsWith('kotlin')) return 'kt';
-  if (l.startsWith('swift')) return 'swift';
-  if (l.startsWith('ruby')) return 'rb';
-  if (l.startsWith('rust')) return 'rs';
-  if (l.startsWith('php')) return 'php';
-  if (l.startsWith('scala')) return 'scala';
-  if (l.includes('sql')) return 'sql';
-  if (l === 'c' || l.startsWith('c ')) return 'c';
-  return 'py';
-}
+export { resolveExtension } from './language.js';
 
 // ── File Path Builder ─────────────────────────────────────────────────────
 
 export function buildFilePath(solution, targetDirectory = '') {
-  const ext = getExtension(solution.language);
+  const ext = resolveExtension(solution);
   const slug = (solution.slug || 'solution').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
   const filename = `${slug}.${ext}`;
 
@@ -141,12 +94,12 @@ export async function commitToGitHub({ settings, solution, metadata, targetDirec
     }
 
     // Append new solution with separator
-    finalContent = appendNewVersionContent(existingContent, solution.code, metadata, solution.language);
+    finalContent = appendNewVersionContent(existingContent, solution.code, metadata, resolveExtension(solution));
     commitMessage = metadata.customMessage ||
       `feat(${solution.platform}): Add new version of ${solution.title}${metadata.timeComplexity ? ` | ${metadata.timeComplexity}` : ''}`;
   } else {
     // Single solution or Override mode
-    finalContent = buildSingleSolutionContent(solution.code, metadata, solution.language);
+    finalContent = buildSingleSolutionContent(solution.code, metadata, resolveExtension(solution));
     commitMessage = metadata.customMessage ||
       `feat(${solution.platform}): ${existingFile ? 'Update' : 'Add'} ${solution.title}${metadata.timeComplexity ? ` | ${metadata.timeComplexity}` : ''}`;
   }

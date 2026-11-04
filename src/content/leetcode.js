@@ -165,8 +165,9 @@
 
     // The same submission is reported by the network bridge and the DOM observer
     const now = Date.now();
-    if (lastProcessedKey === meta.slug && now - lastProcessedAt < 20000) return;
-    lastProcessedKey = meta.slug;
+    const dedupeKey = bridgePayload?.submissionId ? `${meta.slug}#${bridgePayload.submissionId}` : meta.slug;
+    if (lastProcessedKey === dedupeKey && now - lastProcessedAt < 20000) return;
+    lastProcessedKey = dedupeKey;
     lastProcessedAt = now;
     let code = bridgePayload?.code || '';
     if (!code) {
@@ -264,8 +265,16 @@
       btn.classList.contains('submit') ||
       btn.getAttribute('data-cy') === 'submit-code-btn';
 
+    // Running the sample tests must never be treated as a submission
+    if (btn.getAttribute('data-e2e-locator') === 'console-run-button' || btnText === 'run') {
+      isSubmitting = false;
+      return;
+    }
+
     if (isSubmit) {
       console.log('[RepoTap LeetCode] Submit button clicked. Watching for verdict...');
+      snapshotExistingResults();
+      submitClickedAt = Date.now();
       isSubmitting = true;
       // Keep isSubmitting active for up to 30 seconds
       setTimeout(() => { isSubmitting = false; }, 30000);
@@ -283,25 +292,36 @@
     }, 500);
   });
 
+  const RESULT_SELECTOR = [
+    '[data-e2e-locator="submission-result"]',
+    '[data-e2e-locator="submission-result-stats"]',
+    'div[class*="status-accepted"]',
+    '.text-green-s',
+    '.text-green-60',
+  ].join(',');
+
+  // Result nodes already on the page when Submit was clicked (older verdicts) never count
+  let staleResults = new WeakSet();
+  let submitClickedAt = 0;
+
+  function snapshotExistingResults() {
+    staleResults = new WeakSet();
+    document.querySelectorAll(RESULT_SELECTOR).forEach(el => staleResults.add(el));
+  }
+
   function checkDOMForAccepted() {
     try {
-      const resultEl =
-        document.querySelector('[data-e2e-locator="submission-result"]') ||
-        document.querySelector('span[data-e2e-locator="submission-result"]') ||
-        document.querySelector('.text-green-s') ||
-        document.querySelector('.text-green-60') ||
-        document.querySelector('div[class*="status-accepted"]');
+      if (!isSubmitting || Date.now() - submitClickedAt < 1500) return;
 
-      const isAcceptedText = resultEl?.textContent?.includes('Accepted');
+      // Only a freshly rendered node whose own text says "Accepted" is a verdict for this submit
+      const fresh = Array.from(document.querySelectorAll(RESULT_SELECTOR)).find(el =>
+        !staleResults.has(el) && /^\s*Accepted\s*$/i.test(el.textContent || '')
+      );
+      if (!fresh) return;
 
-      // Also check if recent submission card shows Accepted
-      const submissionCard = document.querySelector('[data-e2e-locator="submission-result-stats"]');
-
-      if ((isAcceptedText || submissionCard) && isSubmitting) {
-        console.log('[RepoTap LeetCode] Accepted DOM element found after Submit click.');
-        isSubmitting = false;
-        setTimeout(() => handleAccepted(null), 800);
-      }
+      console.log('[RepoTap LeetCode] Accepted verdict appeared after Submit click.');
+      isSubmitting = false;
+      setTimeout(() => handleAccepted(null), 800);
     } catch (_) {}
   }
 

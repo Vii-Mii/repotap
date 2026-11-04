@@ -115,6 +115,37 @@
     } catch (_) {}
   }
 
+  // ── LeetCode: tell real submissions apart from test runs ─────────────────
+  // Run ("Run" button) polls /submissions/detail/runcode_xxx/check/ and can also say
+  // "Accepted"; a real submission polls /submissions/detail/<numeric id>/check/.
+
+  let lastSubmitStartedAt = 0;
+
+  function noteSubmitRequest(url, method) {
+    if (/\/problems\/[^/]+\/submit\/?(\?|$)/.test(url) && (!method || method.toUpperCase() === 'POST')) {
+      lastSubmitStartedAt = Date.now();
+    }
+  }
+
+  // Decided by URL only: response fields such as run_success appear on submissions too.
+  function isRealSubmissionCheck(url) {
+    if (/runcode|interpret_solution/i.test(url)) return false;
+    // Optional version segment: /submissions/detail/<id>/check/ or /submissions/detail/<id>/v2/check/
+    const m = url.match(/\/submissions\/detail\/([^/]+)\/(?:v\d+\/)?check\//);
+    return !!m && /^\d+$/.test(m[1]);
+  }
+
+  function formatMemory(data) {
+    if (data.status_memory) return data.status_memory;
+    return typeof data.memory === 'number' ? `${(data.memory / 1048576).toFixed(1)} MB` : (data.memory || null);
+  }
+
+  // Final verdict: Accepted is status_code 10 / status_msg "Accepted"; PENDING/STARTED are not final
+  function isAcceptedVerdict(data) {
+    if (!data || data.state === 'PENDING' || data.state === 'STARTED') return false;
+    return data.status_code === 10 || data.status_msg === 'Accepted';
+  }
+
   // ── Network Interception (Fetch & XHR) ───────────────────────────────────
 
   // 1. Monkey-patch window.fetch
@@ -123,13 +154,15 @@
     const response = await originalFetch.apply(this, args);
     try {
       const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+      noteSubmitRequest(url, args[1]?.method || (typeof args[0] !== 'string' ? args[0]?.method : 'GET'));
 
       // LeetCode: Submission check endpoint /submissions/detail/<id>/check/
       if (url.includes('/check/')) {
         const clone = response.clone();
         clone.json().then((data) => {
           console.log('[RepoTap Bridge] LeetCode check response:', data);
-          if (data && data.state === 'SUCCESS' && data.status_msg === 'Accepted') {
+          if (isAcceptedVerdict(data) && !isRealSubmissionCheck(url)) console.log('[RepoTap Bridge] Ignored accepted test run:', url);
+          if (isAcceptedVerdict(data) && isRealSubmissionCheck(url)) {
             const code = getEditorCode();
             window.postMessage({
               source: 'REPOTAP_PAGE_BRIDGE',
@@ -137,9 +170,9 @@
               payload: {
                 status: 'Accepted',
                 runtime: data.status_runtime || data.runtime || null,
-                memory: data.status_memory || data.memory || null,
+                memory: formatMemory(data),
                 code: code || '',
-                submissionId: data.submission_id || null,
+                submissionId: data.submission_id || (url.match(/\/submissions\/detail\/(\d+)\//) || [])[1] || null,
                 lang: data.lang || null,
               },
             }, '*');
@@ -149,25 +182,34 @@
 
       // LeetCode: GraphQL submission details
       if (url.includes('/graphql') || url.includes('/graphql/')) {
-        const postBody = args[1]?.body;
-        if (typeof postBody === 'string' && postBody.includes('submissionDetails')) {
+        {
           const clone = response.clone();
           clone.json().then((data) => {
             const details = data?.data?.submissionDetails;
-            if (details && (details.statusCode === 10 || details.statusMessage === 'Accepted')) {
-              window.postMessage({
-                source: 'REPOTAP_PAGE_BRIDGE',
-                type: 'LEETCODE_ACCEPTED',
-                payload: {
-                  status: 'Accepted',
-                  runtime: details.runtime || null,
-                  memory: details.memory || null,
-                  code: details.code || getEditorCode() || '',
-                  lang: details.lang?.verboseName || details.lang?.name || null,
-                  question: details.question || null,
-                },
-              }, '*');
-            }
+            if (!details) return;
+            const accepted = details.statusCode === 10 || details.statusMessage === 'Accepted';
+
+            // A verdict is "new" if we just saw a submit request, or the submission itself is only
+            // moments old (covers pages that reload onto /submissions/<id>/ after Submit).
+            const ageMs = details.timestamp ? Date.now() - Number(details.timestamp) * 1000 : Infinity;
+            const submittedJustNow = Date.now() - lastSubmitStartedAt < 120000;
+            const isFresh = submittedJustNow || ageMs < 180000;
+            console.log('[RepoTap Bridge] LeetCode submissionDetails:', { accepted, fresh: isFresh, ageSec: Math.round(ageMs / 1000), submittedJustNow });
+            if (!accepted || !isFresh) return;
+
+            window.postMessage({
+              source: 'REPOTAP_PAGE_BRIDGE',
+              type: 'LEETCODE_ACCEPTED',
+              payload: {
+                status: 'Accepted',
+                runtime: details.runtimeDisplay || details.runtime || null,
+                memory: details.memoryDisplay || formatMemory(details),
+                code: details.code || getEditorCode() || '',
+                lang: details.lang?.verboseName || details.lang?.name || null,
+                submissionId: (location.pathname.match(/\/submissions\/(\d+)/) || [])[1] || null,
+                question: details.question || null,
+              },
+            }, '*');
           }).catch(() => {});
         }
       }
@@ -188,6 +230,7 @@
 
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
     this._rt_url = url;
+    noteSubmitRequest(String(url), method);
     return originalOpen.apply(this, [method, url, ...rest]);
   };
 
@@ -203,7 +246,7 @@
         }
         if (url.includes('/check/')) {
           const data = JSON.parse(this.responseText);
-          if (data && data.state === 'SUCCESS' && data.status_msg === 'Accepted') {
+          if (isAcceptedVerdict(data) && isRealSubmissionCheck(url)) {
             const code = getEditorCode();
             window.postMessage({
               source: 'REPOTAP_PAGE_BRIDGE',
@@ -211,9 +254,9 @@
               payload: {
                 status: 'Accepted',
                 runtime: data.status_runtime || null,
-                memory: data.status_memory || null,
+                memory: formatMemory(data),
                 code: code || '',
-                submissionId: data.submission_id || null,
+                submissionId: data.submission_id || (url.match(/\/submissions\/detail\/(\d+)\//) || [])[1] || null,
                 lang: data.lang || null,
               },
             }, '*');

@@ -2,6 +2,8 @@
  * RepoTap — Utility helpers & Constants
  */
 
+import { linePrefixFor } from './language.js';
+
 export const PLATFORM_META = {
   leetcode: {
     label: 'LeetCode',
@@ -119,20 +121,12 @@ export function classNames(...classes) {
 
 // ── Code Comment Formatter ──────────────────────────────────────────────────
 
-const HASH_LANGS = ['python', 'bash', 'shell', 'ruby', 'r'];
-
-function commentStyle(language) {
-  const lang = (language || '').toLowerCase().trim();
-  if (HASH_LANGS.some(l => lang === l || lang.startsWith(`${l} `) || lang.startsWith(l + '3'))) return 'hash';
-  if (lang.includes('sql')) return 'sql';
-  return 'block';
-}
-
+// Comment syntax follows the file extension, which is what the file on GitHub actually is
 /**
  * Creates the commented-out metadata block placed below the solution.
  * Only the fields the user provided are included.
  */
-export function formatSolutionComments(metadata, language) {
+export function formatSolutionComments(metadata, ext) {
   const m = metadata || {};
   const entries = [
     ['Time Complexity', m.timeComplexity],
@@ -149,30 +143,28 @@ export function formatSolutionComments(metadata, language) {
     return [`${label}: ${first}`, ...rest.map(l => `    ${l}`)];
   });
 
-  const style = commentStyle(language);
-  if (style === 'hash') return `\n\n${lines.map(l => `# ${l}`).join('\n')}\n`;
-  if (style === 'sql') return `\n\n${lines.map(l => `-- ${l}`).join('\n')}\n`;
+  const prefix = linePrefixFor(ext);
+  if (prefix) return `\n\n${lines.map(l => `${prefix} ${l}`).join('\n')}\n`;
   return `\n\n/*\n${lines.map(l => ` * ${l}`).join('\n')}\n */\n`;
 }
 
 /**
  * Combines solution code and commented metadata block.
  */
-export function buildSingleSolutionContent(code, metadata, language) {
+export function buildSingleSolutionContent(code, metadata, ext) {
   const cleanCode = (code || '').trim();
-  const comments = formatSolutionComments(metadata, language);
+  const comments = formatSolutionComments(metadata, ext);
   return `${cleanCode}${comments}`;
 }
 
 /**
  * Appends a new version below the existing content, separated by a huge line.
  */
-export function appendNewVersionContent(existingContent, newCode, metadata, language) {
-  const style = commentStyle(language);
-  const prefix = style === 'hash' ? '#' : style === 'sql' ? '--' : '//';
+export function appendNewVersionContent(existingContent, newCode, metadata, ext) {
+  const prefix = linePrefixFor(ext) || '//';
   const rule = `${prefix} ${'-'.repeat(80)}`;
   const separator = `\n\n${rule}\n${prefix} Next Solution Version\n${rule}\n\n`;
 
-  const newSolutionBlock = buildSingleSolutionContent(newCode, metadata, language);
+  const newSolutionBlock = buildSingleSolutionContent(newCode, metadata, ext);
   return `${(existingContent || '').trim()}${separator}${newSolutionBlock}`;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Eye, EyeOff, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
+import { Save, Eye, EyeOff, CheckCircle2, AlertCircle, ExternalLink, Zap, Sparkles } from 'lucide-react';
 import { getSettings, saveSettings } from '../../lib/storage.js';
 
 export default function Settings() {
@@ -9,6 +9,10 @@ export default function Settings() {
     branch: 'main',
     baseDir: '',
     theme: 'dark',
+    autoSuggestEnabled: true,
+    autoSave: false,
+    autoSaveDirMode: 'topic',
+    autoSaveVersionMode: 'new_version',
   });
   const [showToken, setShowToken] = useState(false);
   const [status, setStatus] = useState('idle'); // idle | saving | saved | error
@@ -17,7 +21,13 @@ export default function Settings() {
 
   useEffect(() => {
     getSettings().then(s => {
-      if (s && Object.keys(s).length > 0) setForm(f => ({ ...f, ...s }));
+      if (s && Object.keys(s).length > 0) {
+        setForm(f => ({
+          ...f,
+          ...s,
+          autoSuggestEnabled: s.autoSuggestEnabled !== false,
+        }));
+      }
     });
   }, []);
 
@@ -142,6 +152,100 @@ export default function Settings() {
               {' '}(you can still change the directory per problem when committing)
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Auto-Save & Suggestions */}
+      <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
+        <h2 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+          <Zap className="w-3.5 h-3.5 text-brand-500" />
+          Auto-Save & Suggestions
+        </h2>
+
+        {/* Auto-Suggestion Toggle (Enabled by Default) */}
+        <div className="bg-zinc-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/80 mb-3 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="pr-2">
+              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+                Intelligent Auto-Suggestion
+              </span>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight mt-0.5">
+                Automatically detects problem topic directory (e.g. <code className="font-mono text-[10px] text-brand-500">two-pointers</code>, <code className="font-mono text-[10px] text-brand-500">dynamic-programming</code>), time/space complexity, approach, and tags. Enabled by default.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => update('autoSuggestEnabled', form.autoSuggestEnabled === false ? true : false)}
+              className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                form.autoSuggestEnabled !== false ? 'bg-brand-500' : 'bg-zinc-300 dark:bg-zinc-600'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  form.autoSuggestEnabled !== false ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Auto-Save Toggle */}
+        <div className="bg-zinc-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/80 mb-3 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
+                Auto-Save to GitHub
+              </span>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight mt-0.5">
+                Automatically commits solutions as soon as they pass on LeetCode, GFG, or HackerRank.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => update('autoSave', !form.autoSave)}
+              className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                form.autoSave ? 'bg-brand-500' : 'bg-zinc-300 dark:bg-zinc-600'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  form.autoSave ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {form.autoSave && (
+            <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700 space-y-2.5 animate-fade-in">
+              {/* Directory Strategy */}
+              <div>
+                <label className={labelClass}>Auto-Save Folder Organization</label>
+                <select
+                  value={form.autoSaveDirMode || 'topic'}
+                  onChange={e => update('autoSaveDirMode', e.target.value)}
+                  className="w-full text-xs px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none text-zinc-800 dark:text-zinc-200"
+                >
+                  <option value="topic">Topic-based (e.g. two-pointers/two-sum.py)</option>
+                  <option value="baseDir">Base directory only (e.g. leetcode/two-sum.py or root)</option>
+                  <option value="combined">Combined: Base + Topic (e.g. leetcode/two-pointers/two-sum.py)</option>
+                </select>
+              </div>
+
+              {/* Version Mode */}
+              <div>
+                <label className={labelClass}>When problem already exists on GitHub</label>
+                <select
+                  value={form.autoSaveVersionMode || 'new_version'}
+                  onChange={e => update('autoSaveVersionMode', e.target.value)}
+                  className="w-full text-xs px-2.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none text-zinc-800 dark:text-zinc-200"
+                >
+                  <option value="new_version">Append New Version (separated by line)</option>
+                  <option value="override">Override entire file with new solution</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -4,6 +4,7 @@
  */
 
 import { commitToGitHub } from '../lib/github.js';
+import { autoSuggest } from '../lib/autoSuggest.js';
 import {
   getPendingSolutions,
   addPendingSolution,
@@ -93,6 +94,112 @@ async function handleRemovePending(payload) {
 async function handleSolutionAccepted(payload, sender) {
   try {
     console.log('[RepoTap Background] Processing accepted solution:', payload.title, payload.platform);
+
+    const settings = await getSettings();
+    const autoSuggestEnabled = settings.autoSuggestEnabled !== false;
+
+    // Compute intelligent auto suggestions (enabled by default)
+    const suggestions = autoSuggestEnabled ? autoSuggest(payload) : null;
+    const enrichedPayload = {
+      ...payload,
+      autoSuggestions: suggestions,
+    };
+
+    // ── Auto-Save to GitHub (if enabled and GitHub is configured) ─────────
+    if (settings.autoSave && settings.githubToken && settings.repoFullName) {
+      console.log('[RepoTap Background] Auto-Save is ENABLED. Committing directly to GitHub...');
+
+      // Determine directory based on user setting
+      let targetDirectory = suggestions?.suggestedDirectory || 'algorithms';
+      if (settings.autoSaveDirMode === 'baseDir') {
+        targetDirectory = settings.baseDir || '';
+      } else if (settings.autoSaveDirMode === 'combined' && settings.baseDir) {
+        const cleanBase = settings.baseDir.trim().replace(/^\/+|\/+$/g, '');
+        targetDirectory = cleanBase ? `${cleanBase}/${targetDirectory}` : targetDirectory;
+      }
+
+      const metadata = {
+        timeComplexity: suggestions?.timeComplexity || 'O(n)',
+        spaceComplexity: suggestions?.spaceComplexity || 'O(1)',
+        approach: suggestions?.approach || '',
+        tags: suggestions?.suggestedTags || ['array'],
+        customMessage: `feat(${payload.platform}): Auto-commit ${payload.title}${suggestions?.timeComplexity ? ` | ${suggestions.timeComplexity}` : ''}`,
+      };
+
+      try {
+        const commitResult = await commitToGitHub({
+          settings,
+          solution: enrichedPayload,
+          metadata,
+          targetDirectory,
+          versionMode: settings.autoSaveVersionMode || 'new_version',
+        });
+
+        if (commitResult.success) {
+          // If it was previously pending, remove it
+          if (payload.id) {
+            await removePendingById(payload.id);
+          } else {
+            await removePendingSolution(payload.slug, payload.platform);
+          }
+
+          await addToHistory({
+            ...enrichedPayload,
+            commitUrl: commitResult.commitUrl,
+            filePath: commitResult.filePath,
+            committedAt: new Date().toISOString(),
+            autoSaved: true,
+          });
+
+          const remaining = await getPendingSolutions();
+          updateBadge(remaining.length);
+
+          // Trigger on-page aesthetic HUD confirmation animation
+          if (sender?.tab?.id) {
+            chrome.tabs.sendMessage(sender.tab.id, {
+              type: 'AUTOSAVE_COMMITTED',
+              data: {
+                title: payload.title,
+                filePath: commitResult.filePath,
+                commitUrl: commitResult.commitUrl,
+                timeComplexity: metadata.timeComplexity,
+                spaceComplexity: metadata.spaceComplexity,
+                platform: payload.platform,
+              },
+            }).catch(() => {});
+          }
+
+          try {
+            chrome.notifications.create(`repotap_autosave_${Date.now()}`, {
+              type: 'basic',
+              iconUrl: 'icons/icon128.png',
+              title: 'RepoTap: Auto-Saved to GitHub! ⚡',
+              message: `${payload.title} (${payload.platform}) → ${commitResult.filePath}`,
+              priority: 2,
+            });
+          } catch (_) {}
+
+          notifyPopup();
+          return {
+            success: true,
+            autoSaved: true,
+            filePath: commitResult.filePath,
+            data: {
+              title: payload.title,
+              filePath: commitResult.filePath,
+              commitUrl: commitResult.commitUrl,
+              timeComplexity: metadata.timeComplexity,
+              spaceComplexity: metadata.spaceComplexity,
+              platform: payload.platform,
+            },
+          };
+        }
+      } catch (autoSaveErr) {
+        console.warn('[RepoTap Background] Auto-save commit attempt failed, falling back to staging:', autoSaveErr);
+      }
+    }
+
+    // ── Manual Review Staging ─────────────────────────────────────────────
     const existing = await getPendingSolutions();
 
     // Check if same problem already pending
@@ -102,11 +209,11 @@ async function handleSolutionAccepted(payload, sender) {
 
     let updatedList;
     if (existingIndex >= 0) {
-      // Problem already pending -> update it with newest code & stats
+      // Problem already pending -> update it with newest code, stats & suggestions
       console.log('[RepoTap Background] Updating existing pending solution:', payload.slug);
       existing[existingIndex] = {
         ...existing[existingIndex],
-        ...payload,
+        ...enrichedPayload,
         updatedAt: new Date().toISOString(),
       };
       updatedList = existing;
@@ -115,7 +222,7 @@ async function handleSolutionAccepted(payload, sender) {
       // New pending problem
       console.log('[RepoTap Background] Adding new pending solution:', payload.slug);
       const newEntry = {
-        ...payload,
+        ...enrichedPayload,
         id: `${payload.platform}-${payload.slug}-${Date.now()}`,
       };
       updatedList = [...existing, newEntry];

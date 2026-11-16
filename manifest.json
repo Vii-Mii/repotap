@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "RepoTap",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Commit LeetCode, HackerRank & GeeksForGeeks accepted solutions to GitHub — structured, annotated, on your terms.",
   "permissions": [
     "storage",
@@ -45,17 +45,17 @@
     },
     {
       "matches": ["https://*.leetcode.com/*"],
-      "js": ["content/leetcode.js"],
+      "js": ["content/toast.js", "content/leetcode.js"],
       "run_at": "document_idle"
     },
     {
       "matches": ["https://*.hackerrank.com/*"],
-      "js": ["content/hackerrank.js"],
+      "js": ["content/toast.js", "content/hackerrank.js"],
       "run_at": "document_idle"
     },
     {
       "matches": ["https://*.geeksforgeeks.org/*"],
-      "js": ["content/geeksforgeeks.js"],
+      "js": ["content/toast.js", "content/geeksforgeeks.js"],
       "run_at": "document_idle",
       "all_frames": true
     }

@@ -6,6 +6,14 @@
 (function () {
   'use strict';
 
+  // Toast helpers — toast.js is loaded before this script and sets window.__REPOTAP_TOAST__
+  function _showAutoCommitAnimation(data) {
+    if (window.__REPOTAP_TOAST__) window.__REPOTAP_TOAST__.showAutoCommitAnimation(data);
+  }
+  function _showManualReviewPrompt(meta) {
+    if (window.__REPOTAP_TOAST__) window.__REPOTAP_TOAST__.showManualReviewPrompt(meta);
+  }
+
   console.log('[RepoTap HackerRank] Content script loaded on:', location.href);
 
   let lastUrl = location.href;
@@ -34,11 +42,18 @@
         document.querySelector('select[name="language"] option:checked');
       const language = langEl ? langEl.textContent.trim() : 'Java';
 
+      const topicTags = [domain].filter(d => d && d !== 'general');
+      document.querySelectorAll('.breadcrumb-item-text, .challenge-meta-value').forEach(el => {
+        const txt = el.textContent.trim();
+        if (txt && !topicTags.includes(txt)) topicTags.push(txt);
+      });
+
       return {
         title,
         slug,
         domain,
         language,
+        topicTags,
         platform: 'hackerrank',
         url: location.href,
       };
@@ -115,8 +130,22 @@
     chrome.runtime.sendMessage({
       type: 'SOLUTION_ACCEPTED',
       payload,
+    }, (response) => {
+      console.log('[RepoTap HackerRank] Sent to background, response:', response);
+      if (response?.autoSaved) {
+        if (response.data) _showAutoCommitAnimation(response.data);
+      } else {
+        _showManualReviewPrompt(meta);
+      }
     });
   }
+
+  // Listen for auto-commit confirmation animation from background
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === 'AUTOSAVE_COMMITTED') {
+      _showAutoCommitAnimation(msg.data);
+    }
+  });
 
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('button');

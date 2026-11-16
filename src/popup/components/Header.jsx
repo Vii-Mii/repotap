@@ -1,7 +1,7 @@
 import React from 'react';
 import { Moon, Sun, GitBranch, Settings, Clock, Zap, X } from 'lucide-react';
 
-export default function Header({ page, setPage, theme, toggleTheme, pendingCount }) {
+export default function Header({ page, setPage, theme, toggleTheme, pendingCount, autoSave, toggleAutoSave }) {
   const tabs = [
     { id: 'commit', icon: Zap, label: 'Commit', badge: pendingCount },
     { id: 'history', icon: Clock, label: 'History' },
@@ -21,21 +21,37 @@ export default function Header({ page, setPage, theme, toggleTheme, pendingCount
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {toggleAutoSave && (
+            <button
+              type="button"
+              onClick={toggleAutoSave}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all border ${
+                autoSave
+                  ? 'bg-emerald-50 text-emerald-600 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-700'
+                  : 'bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
+              }`}
+              title={autoSave ? "Auto-Save is ON: accepted solutions commit directly to GitHub" : "Auto-Save is OFF: solutions are reviewed before committing"}
+            >
+              <Zap className={`w-2.5 h-2.5 ${autoSave ? 'fill-emerald-500 text-emerald-500' : ''}`} />
+              <span>Auto-Save: {autoSave ? 'ON' : 'OFF'}</span>
+            </button>
+          )}
+
           <button
             onClick={toggleTheme}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             title="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
           <button
             onClick={() => window.close()}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
             title="Close RepoTap"
             aria-label="Close RepoTap"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

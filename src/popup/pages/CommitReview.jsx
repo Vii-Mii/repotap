@@ -7,12 +7,14 @@ import {
   AlertCircle,
   X,
   Folder,
+  Sparkles,
 } from 'lucide-react';
 import TagSelector from '../components/TagSelector.jsx';
 import ComplexityPicker from '../components/ComplexityPicker.jsx';
 import { PLATFORM_META, DIFFICULTY_COLORS } from '../../lib/utils.js';
 import { resolveExtension } from '../../lib/language.js';
 import { removePendingById, removePendingSolution } from '../../lib/storage.js';
+import { autoSuggest } from '../../lib/autoSuggest.js';
 
 const VERSION_OPTIONS = [
   {
@@ -33,6 +35,7 @@ export default function CommitReview({ pending, onCommitted, onDismiss }) {
   const [targetDirectory, setTargetDirectory] = useState('');
   const [repoInfo, setRepoInfo] = useState('');
   const [baseDir, setBaseDir] = useState('');
+  const [autoSuggestActive, setAutoSuggestActive] = useState(true);
   const [metadata, setMetadata] = useState({
     timeComplexity: '',
     spaceComplexity: '',
@@ -58,6 +61,7 @@ export default function CommitReview({ pending, onCommitted, onDismiss }) {
         setBaseDir(s.baseDir);
         setTargetDirectory(d => d || s.baseDir);
       }
+      setAutoSuggestActive(s.autoSuggestEnabled !== false);
     });
   }, []);
 
@@ -68,6 +72,45 @@ export default function CommitReview({ pending, onCommitted, onDismiss }) {
   const diffColor = DIFFICULTY_COLORS[diff] || DIFFICULTY_COLORS.unknown;
   const ext = resolveExtension(solution);
   const previewPath = `${targetDirectory ? targetDirectory.replace(/^\/+|\/+$/g, '') + '/' : ''}${solution.slug}.${ext}`;
+
+  // Auto-fill suggestions on active solution change (if auto-suggest is enabled)
+  useEffect(() => {
+    if (!solution) return;
+    if (!autoSuggestActive) {
+      setTargetDirectory(prev => prev || baseDir || 'algorithms');
+      return;
+    }
+
+    const sugg = solution.autoSuggestions || autoSuggest(solution);
+
+    setTargetDirectory(prev => {
+      if (prev && prev !== baseDir && prev !== 'algorithms') return prev;
+      return sugg.suggestedDirectory || baseDir || 'algorithms';
+    });
+
+    setMetadata(prev => ({
+      timeComplexity: prev.timeComplexity || sugg.timeComplexity || 'O(n)',
+      spaceComplexity: prev.spaceComplexity || sugg.spaceComplexity || 'O(1)',
+      approach: prev.approach || sugg.approach || '',
+      notes: prev.notes || '',
+      customMessage: prev.customMessage || '',
+      tags: prev.tags && prev.tags.length > 0 ? prev.tags : (sugg.suggestedTags || ['array']),
+    }));
+  }, [solution?.id, solution?.slug, autoSuggestActive]);
+
+  function applyAutoSuggestions() {
+    if (!solution) return;
+    const sugg = solution.autoSuggestions || autoSuggest(solution);
+    setTargetDirectory(sugg.suggestedDirectory || 'algorithms');
+    setMetadata({
+      timeComplexity: sugg.timeComplexity || 'O(n)',
+      spaceComplexity: sugg.spaceComplexity || 'O(1)',
+      approach: sugg.approach || '',
+      notes: '',
+      customMessage: '',
+      tags: sugg.suggestedTags || ['array'],
+    });
+  }
 
   function resetForm() {
     setMetadata({
@@ -229,10 +272,21 @@ export default function CommitReview({ pending, onCommitted, onDismiss }) {
 
       {/* Directory / Path Input */}
       <div>
-        <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1 flex items-center gap-1">
-          <Folder className="w-3 h-3 text-brand-500" />
-          Target Directory / Category
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
+            <Folder className="w-3 h-3 text-brand-500" />
+            Target Directory / Category
+          </label>
+          <button
+            type="button"
+            onClick={applyAutoSuggestions}
+            className="flex items-center gap-1 text-[10px] text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium"
+            title="Auto-detect directory, complexity, approach and tags"
+          >
+            <Sparkles className="w-3 h-3 text-brand-500" />
+            <span>Auto-suggested</span>
+          </button>
+        </div>
         <div className="relative">
           <input
             type="text"

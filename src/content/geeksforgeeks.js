@@ -7,6 +7,14 @@
 (function () {
   'use strict';
 
+  // Toast helpers — toast.js is loaded before this script and sets window.__REPOTAP_TOAST__
+  function _showAutoCommitAnimation(data) {
+    if (window.__REPOTAP_TOAST__) window.__REPOTAP_TOAST__.showAutoCommitAnimation(data);
+  }
+  function _showManualReviewPrompt(meta) {
+    if (window.__REPOTAP_TOAST__) window.__REPOTAP_TOAST__.showManualReviewPrompt(meta);
+  }
+
   console.log('[RepoTap GFG] Content script initialized on:', location.href);
 
   let lastProcessedKey = null;
@@ -102,11 +110,21 @@
         if (langEl) langGuess = langEl.tagName === 'SELECT' ? langEl.selectedOptions[0]?.textContent || '' : langEl.textContent;
       } catch (_) {}
 
+      // Topic tags
+      const topicTags = [];
+      try {
+        topDoc.querySelectorAll('.problems_tag_container a, [class*="topicTag"], a[href*="/explore?category"], [class*="tag"]').forEach(el => {
+          const txt = el.textContent.trim();
+          if (txt && !topicTags.includes(txt)) topicTags.push(txt);
+        });
+      } catch (_) {}
+
       return {
         title,
         slug,
         difficulty,
         language: detectLanguage(langGuess, code),
+        topicTags,
         platform: 'geeksforgeeks',
         url: pageUrl,
       };
@@ -180,69 +198,6 @@
     return '';
   }
 
-  // ── Floating On-Screen Toast Banner ──────────────────────────────────────
-
-  function showFloatingBanner(meta) {
-    try {
-      const targetDoc = getTopDoc();
-      if (targetDoc.getElementById('repotap-floating-toast')) return;
-
-      const toast = targetDoc.createElement('div');
-      toast.id = 'repotap-floating-toast';
-      toast.style.cssText = `
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        z-index: 2147483647;
-        background: #09090b;
-        color: #fafafa;
-        border: 1px solid #27272a;
-        border-radius: 12px;
-        padding: 12px 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 280px;
-      `;
-
-      toast.innerHTML = `
-        <div style="width: 32px; height: 32px; border-radius: 8px; background: #0ea5e9; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
-          ⚡
-        </div>
-        <div style="flex: 1; min-width: 0;">
-          <div style="font-size: 10px; font-weight: 700; color: #0ea5e9; text-transform: uppercase;">RepoTap</div>
-          <div style="font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="repotap-toast-title"></div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <button id="repotap-open-btn" style="background: #0ea5e9; color: white; border: none; padding: 5px 12px; border-radius: 7px; font-size: 11px; font-weight: 600; cursor: pointer;">
-            Commit
-          </button>
-          <button id="repotap-close-btn" style="background: transparent; color: #71717a; border: none; padding: 4px 6px; font-size: 13px; cursor: pointer;">
-            ✕
-          </button>
-        </div>
-      `;
-
-      toast.querySelector('#repotap-toast-title').textContent = meta.title || 'Solution Solved';
-      targetDoc.body.appendChild(toast);
-
-      toast.querySelector('#repotap-open-btn')?.addEventListener('click', () => {
-        chrome.runtime.sendMessage({ type: 'OPEN_POPUP' });
-        toast.remove();
-      });
-
-      toast.querySelector('#repotap-close-btn')?.addEventListener('click', () => {
-        toast.remove();
-      });
-
-      setTimeout(() => {
-        if (toast.parentNode) toast.remove();
-      }, 15000);
-    } catch (_) {}
-  }
-
   // ── Handle Accepted Submission ───────────────────────────────────────────
 
   async function handleAccepted(bridgePayload = null) {
@@ -271,10 +226,20 @@
       payload,
     }, (response) => {
       console.log('[RepoTap GFG] Sent to background, response:', response);
+      if (response?.autoSaved) {
+        if (response.data) _showAutoCommitAnimation(response.data);
+      } else {
+        _showManualReviewPrompt(meta);
+      }
     });
-
-    showFloatingBanner(meta);
   }
+
+  // Listen for auto-commit confirmation animation
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === 'AUTOSAVE_COMMITTED') {
+      _showAutoCommitAnimation(msg.data);
+    }
+  });
 
   // ── Listen for Bridge Messages ────────────────────────────────────────────
 

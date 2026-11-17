@@ -5,15 +5,19 @@
 
 import { commitToGitHub } from '../lib/github.js';
 import { autoSuggest } from '../lib/autoSuggest.js';
+import { login, logout, getAuthState } from '../lib/auth/github-auth.js';
+import { markSolvedForSlug } from '../lib/sheets.js';
 import {
   getPendingSolutions,
   addPendingSolution,
   removePendingSolution,
   removePendingById,
   getSettings,
+  getHistory,
   addToHistory,
   savePendingSolutions,
   migrateLegacyKeys,
+  recordActivity,
 } from '../lib/storage.js';
 
 console.log('[RepoTap Background] Service worker initialized.');
@@ -56,6 +60,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ ok: true });
     return false;
   }
+
+  if (message.type === 'LOGIN_GITHUB') {
+    enqueue(() => login())
+      .then((user) => sendResponse({ ok: true, ...user }))
+      .catch((err) => sendResponse({ ok: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'LOGOUT_GITHUB') {
+    enqueue(() => logout()).then((res) => sendResponse(res));
+    return true;
+  }
+
+  if (message.type === 'GET_AUTH_STATE') {
+    getAuthState().then(sendResponse);
+    return true;
+  }
+
+  if (message.type === 'BACKFILL_SHEETS') {
+    enqueue(() => runSheetBackfill()).then((res) => sendResponse(res));
+    return true;
+  }
 });
 
 // Storage read-modify-write must not interleave when duplicate reports arrive together
@@ -94,6 +120,18 @@ async function handleRemovePending(payload) {
 async function handleSolutionAccepted(payload, sender) {
   try {
     console.log('[RepoTap Background] Processing accepted solution:', payload.title, payload.platform);
+
+    // ── Streak: any accepted solution counts as activity ──────────────────
+    await recordActivity('accepted');
+
+    // ── DSA sheet progress: auto-mark matching LeetCode problems ──────────
+    if (payload.platform === 'leetcode') {
+      try {
+        await markSolvedForSlug(payload.slug, 'auto');
+      } catch (sheetErr) {
+        console.warn('[RepoTap Background] Sheet auto-mark failed:', sheetErr);
+      }
+    }
 
     const settings = await getSettings();
     const autoSuggestEnabled = settings.autoSuggestEnabled !== false;
@@ -136,6 +174,8 @@ async function handleSolutionAccepted(payload, sender) {
         });
 
         if (commitResult.success) {
+          await recordActivity('commit');
+
           // If it was previously pending, remove it
           if (payload.id) {
             await removePendingById(payload.id);
@@ -337,6 +377,8 @@ async function handleCommit(commitData) {
     const result = await commitToGitHub({ ...commitData, settings });
 
     if (result.success) {
+      await recordActivity('commit');
+
       if (commitData.solution.id) {
         await removePendingById(commitData.solution.id);
       } else {
@@ -392,13 +434,46 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+// ── Sheet Backfill ────────────────────────────────────────────────────────
+// Marks sheet problems solved from commit history (LeetCode entries), so
+// progress isn't empty for users who committed solutions before v1.2.0.
+
+let backfillDone = false;
+
+async function runSheetBackfill() {
+  if (backfillDone) return { skipped: true };
+  backfillDone = true;
+  try {
+    const history = await getHistory();
+    const slugs = new Set();
+    for (const entry of history) {
+      if (entry.platform === 'leetcode' && entry.slug && entry.slug !== 'unknown') {
+        slugs.add(entry.slug);
+      }
+    }
+    let marked = 0;
+    for (const slug of slugs) {
+      const sheetIds = await markSolvedForSlug(slug, 'backfill');
+      marked += sheetIds.length;
+    }
+    console.log(`[RepoTap Background] Sheet backfill: ${slugs.size} slugs from history, ${marked} sheet marks.`);
+    return { ok: true, slugs: slugs.size, marks: marked };
+  } catch (err) {
+    backfillDone = false;
+    console.warn('[RepoTap Background] Sheet backfill failed:', err);
+    return { ok: false, error: err.message };
+  }
+}
+
 // Restore badge on startup / install
 chrome.runtime.onStartup.addListener(async () => {
   const pending = await getPendingSolutions();
   updateBadge(pending.length);
+  runSheetBackfill();
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
   const pending = await getPendingSolutions();
   updateBadge(pending.length);
+  runSheetBackfill();
 });

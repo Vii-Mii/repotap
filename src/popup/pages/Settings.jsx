@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Eye, EyeOff, CheckCircle2, AlertCircle, ExternalLink, Zap, Sparkles } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Zap, Sparkles, Github, LogOut, Loader2, ShieldAlert } from 'lucide-react';
 import { getSettings, saveSettings } from '../../lib/storage.js';
+
+const AUTH_FIELDS = ['githubToken', 'githubLogin', 'githubAvatarUrl', 'authMethod', 'authedAt', 'tokenExpiresAt'];
+
+function sendMessage(message) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage(message, (response) => resolve(response || {}));
+  });
+}
 
 export default function Settings() {
   const [form, setForm] = useState({
-    githubToken: '',
     repoFullName: '',
     branch: 'main',
     baseDir: '',
@@ -14,10 +21,13 @@ export default function Settings() {
     autoSaveDirMode: 'topic',
     autoSaveVersionMode: 'new_version',
   });
-  const [showToken, setShowToken] = useState(false);
   const [status, setStatus] = useState('idle'); // idle | saving | saved | error
   const [validating, setValidating] = useState(false);
   const [repoValid, setRepoValid] = useState(null); // null | true | false
+
+  const [auth, setAuth] = useState(null); // { configured, authed, login, avatarUrl, authMethod }
+  const [authBusy, setAuthBusy] = useState(false); // idle | logging-in | error
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
     getSettings().then(s => {
@@ -29,19 +39,44 @@ export default function Settings() {
         }));
       }
     });
+    sendMessage({ type: 'GET_AUTH_STATE' }).then(res => setAuth(res));
   }, []);
 
   function update(key, val) {
     setForm(f => ({ ...f, [key]: val }));
-    if (key === 'repoFullName' || key === 'githubToken') setRepoValid(null);
+    if (key === 'repoFullName') setRepoValid(null);
+  }
+
+  async function handleLogin() {
+    setAuthBusy('logging-in');
+    setAuthError(null);
+    const res = await sendMessage({ type: 'LOGIN_GITHUB' });
+    if (res.ok) {
+      setAuth(prev => ({ ...(prev || {}), authed: true, login: res.login, avatarUrl: res.avatarUrl, authMethod: 'oauth' }));
+      // Refresh the token in the form so repo testing works right away
+      const settings = await getSettings();
+      setForm(f => ({ ...f, githubToken: settings.githubToken || '' }));
+    } else {
+      setAuthError(res.error || 'Login failed');
+    }
+    setAuthBusy('idle');
+  }
+
+  async function handleLogout() {
+    setAuthBusy('logging-in');
+    await sendMessage({ type: 'LOGOUT_GITHUB' });
+    setAuth(prev => ({ ...(prev || {}), authed: false, login: null, avatarUrl: null }));
+    setRepoValid(null);
+    setAuthBusy('idle');
   }
 
   async function validateRepo() {
-    if (!form.githubToken || !form.repoFullName) return;
+    const token = form.githubToken;
+    if (!token || !form.repoFullName) return;
     setValidating(true);
     try {
       const res = await fetch(`https://api.github.com/repos/${form.repoFullName}`, {
-        headers: { Authorization: `Bearer ${form.githubToken}`, 'X-GitHub-Api-Version': '2022-11-28' },
+        headers: { Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28' },
       });
       setRepoValid(res.ok);
     } catch {
@@ -53,7 +88,12 @@ export default function Settings() {
   async function handleSave() {
     setStatus('saving');
     try {
-      await saveSettings(form);
+      // Merge over stored settings so auth fields (owned by login/logout) survive
+      const current = await getSettings();
+      const toSave = { ...current, ...form };
+      for (const key of AUTH_FIELDS) delete toSave[key];
+      const merged = { ...current, ...toSave };
+      await saveSettings(merged);
       setStatus('saved');
       setTimeout(() => setStatus('idle'), 2000);
     } catch {
@@ -63,41 +103,83 @@ export default function Settings() {
 
   const inputClass = "w-full text-xs px-3 py-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none focus:border-brand-400 dark:focus:border-brand-500 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 transition-colors font-mono";
   const labelClass = "block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1";
+  const authed = Boolean(auth?.authed);
 
   return (
     <div className="p-4 space-y-4 animate-fade-in">
       <div>
-        <h2 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">GitHub Configuration</h2>
+        <h2 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">GitHub Account</h2>
 
-        {/* PAT */}
-        <div className="space-y-3">
-          <div>
-            <label className={labelClass}>GitHub Personal Access Token</label>
-            <div className="relative">
-              <input
-                type={showToken ? 'text' : 'password'}
-                placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                value={form.githubToken}
-                onChange={e => update('githubToken', e.target.value)}
-                className={inputClass + ' pr-9'}
-              />
+        {/* Login card */}
+        <div className="bg-zinc-50 dark:bg-zinc-800/60 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/80">
+          {auth === null ? (
+            <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <Loader2 className="w-4 h-4 animate-spin" /> Checking GitHub session…
+            </div>
+          ) : !auth.configured ? (
+            <div className="flex items-start gap-2.5">
+              <ShieldAlert className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">GitHub login is not configured yet</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed mt-1">
+                  Register a GitHub OAuth App with callback URL <code className="font-mono text-[10px] bg-zinc-200 dark:bg-zinc-700 px-1 rounded">https://&lt;extension-id&gt;.chromiumapp.org/</code> and paste its Client ID into <code className="font-mono text-[10px] bg-zinc-200 dark:bg-zinc-700 px-1 rounded">src/lib/auth/config.js</code>, then rebuild the extension.
+                </p>
+              </div>
+            </div>
+          ) : authed ? (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {auth.avatarUrl ? (
+                  <img src={auth.avatarUrl} alt="" className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                    <Github className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">@{auth.login}</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 className="w-2.5 h-2.5" />
+                    {auth.authMethod === 'oauth' ? 'Connected via GitHub login' : 'Connected via token (legacy)'}
+                  </p>
+                </div>
+              </div>
               <button
-                onClick={() => setShowToken(!showToken)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                onClick={handleLogout}
+                disabled={authBusy === 'logging-in'}
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-red-300 dark:hover:border-red-700 disabled:opacity-50 transition-colors whitespace-nowrap"
               >
-                {showToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {authBusy === 'logging-in' ? <Loader2 className="w-3 h-3 animate-spin" /> : <LogOut className="w-3 h-3" />}
+                Disconnect
               </button>
             </div>
-            <a
-              href="https://github.com/settings/tokens/new?scopes=repo&description=RepoTap"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 mt-1 text-[10px] text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
-            >
-              Generate token on GitHub <ExternalLink className="w-2.5 h-2.5" />
-            </a>
-          </div>
+          ) : (
+            <div>
+              <button
+                onClick={handleLogin}
+                disabled={authBusy === 'logging-in'}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-100 disabled:opacity-60 transition-colors"
+              >
+                {authBusy === 'logging-in' ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Opening GitHub…</>
+                ) : (
+                  <><Github className="w-4 h-4" /> Sign in with GitHub</>
+                )}
+              </button>
+              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-2 leading-relaxed">
+                RepoTap gets a token automatically after you authorize — no manual token copying. Your token stays in local storage and is only sent to GitHub.
+              </p>
+              {authError && (
+                <p className="flex items-start gap-1 text-[10px] text-red-500 mt-2">
+                  <AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5" /> {authError}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
+        {/* Repo config */}
+        <div className="mt-3 space-y-3">
           {/* Repo */}
           <div>
             <label className={labelClass}>Repository (owner/repo)</label>
@@ -112,11 +194,15 @@ export default function Settings() {
               <button
                 onClick={validateRepo}
                 disabled={validating || !form.githubToken || !form.repoFullName}
+                title={!authed ? 'Sign in first to test repository access' : 'Check repository access'}
                 className="px-2.5 py-1.5 text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-brand-400 dark:hover:border-brand-500 disabled:opacity-50 text-zinc-600 dark:text-zinc-400 transition-colors whitespace-nowrap"
               >
                 {validating ? '…' : 'Test'}
               </button>
             </div>
+            {!authed && (
+              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">Sign in with GitHub to test repository access.</p>
+            )}
             {repoValid === true && (
               <p className="flex items-center gap-1 text-[10px] text-green-500 mt-1"><CheckCircle2 className="w-3 h-3" /> Repository accessible</p>
             )}
@@ -267,7 +353,7 @@ export default function Settings() {
       {/* Info */}
       <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700">
         <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-          🔒 Your token is stored locally in <code className="font-mono text-[10px] bg-zinc-200 dark:bg-zinc-700 px-1 rounded">chrome.storage.local</code> and never sent to any server other than GitHub's API.
+          🔒 Your GitHub token is stored locally in <code className="font-mono text-[10px] bg-zinc-200 dark:bg-zinc-700 px-1 rounded">chrome.storage.local</code> and never sent to any server other than GitHub's API.
         </p>
       </div>
     </div>

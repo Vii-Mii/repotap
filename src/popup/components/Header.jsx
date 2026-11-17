@@ -1,8 +1,9 @@
 import React from 'react';
-import { Moon, Sun, GitBranch, Settings, Clock, Zap, X } from 'lucide-react';
+import { Moon, Sun, GitBranch, Settings, Clock, Zap, X, LayoutDashboard } from 'lucide-react';
 
 export default function Header({ page, setPage, theme, toggleTheme, pendingCount, autoSave, toggleAutoSave }) {
   const tabs = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'commit', icon: Zap, label: 'Commit', badge: pendingCount },
     { id: 'history', icon: Clock, label: 'History' },
     { id: 'settings', icon: Settings, label: 'Settings' },
@@ -57,13 +58,13 @@ export default function Header({ page, setPage, theme, toggleTheme, pendingCount
       </div>
 
       {/* Tabs */}
-      <div className="flex px-3 gap-1 pb-0">
+      <div className="flex px-3 gap-1 pb-0 justify-between">
         {tabs.map(({ id, icon: Icon, label, badge }) => (
           <button
             key={id}
             onClick={() => setPage(id)}
             className={`
-              flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg border-b-2 transition-all relative
+              flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium rounded-t-lg border-b-2 transition-all relative
               ${page === id
                 ? 'border-brand-500 text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20'
                 : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'

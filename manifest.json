@@ -1,17 +1,19 @@
 {
   "manifest_version": 3,
   "name": "RepoTap",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Commit LeetCode, HackerRank & GeeksForGeeks accepted solutions to GitHub — structured, annotated, on your terms.",
   "permissions": [
     "storage",
-    "notifications"
+    "notifications",
+    "identity"
   ],
   "host_permissions": [
     "https://*.leetcode.com/*",
     "https://*.hackerrank.com/*",
     "https://*.geeksforgeeks.org/*",
-    "https://api.github.com/*"
+    "https://api.github.com/*",
+    "https://github.com/*"
   ],
   "action": {
     "default_popup": "popup.html",

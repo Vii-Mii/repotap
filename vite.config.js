@@ -1,70 +1,59 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
-import { copyFileSync, mkdirSync, existsSync, writeFileSync, readFileSync } from 'fs';
+import { cpSync, existsSync, mkdirSync } from 'fs';
 
-// Plugin to copy manifest + icons into dist
-// Also strips any "export {}" or top-level export statements from plain content scripts
-function copyExtensionFiles() {
+export default defineConfig(({ mode }) => {
+  // Load .env from the project root (not committed)
+  const env = loadEnv(mode, process.cwd(), 'REPOTAP_');
+
   return {
-    name: 'copy-extension-files',
-    closeBundle() {
-      // Copy manifest
-      copyFileSync('manifest.json', 'dist/manifest.json');
-
-      // Copy icons if they exist
-      const iconsDir = 'dist/icons';
-      if (!existsSync(iconsDir)) mkdirSync(iconsDir, { recursive: true });
-      ['icon16.png', 'icon48.png', 'icon128.png'].forEach(icon => {
-        const src = `public/icons/${icon}`;
-        if (existsSync(src)) copyFileSync(src, `${iconsDir}/${icon}`);
-      });
-
-      // Strip "export {}" from plain-script content files (rollup may emit it for IIFE entries)
-      ['toast', 'leetcode', 'hackerrank', 'geeksforgeeks', 'page-bridge'].forEach(name => {
-        const f = `dist/content/${name}.js`;
-        if (existsSync(f)) {
-          let src = readFileSync(f, 'utf8');
-          // Remove any trailing "export {};" or "export { ... };" that rollup emits
-          src = src.replace(/^export\s*\{[^}]*\}\s*;?\s*$/gm, '');
-          writeFileSync(f, src, 'utf8');
-        }
-      });
+    plugins: [
+      react(),
+      // Copy manifest.json (repo root) and icons (public/) to dist/
+      {
+        name: 'copy-manifest',
+        closeBundle() {
+          const dest = resolve(__dirname, 'dist');
+          if (!existsSync(dest)) mkdirSync(dest, { recursive: true });
+          // Manifest from repo root
+          cpSync(resolve(__dirname, 'manifest.json'), resolve(dest, 'manifest.json'));
+          // Icons from public/
+          const pubIcons = resolve(__dirname, 'public', 'icons');
+          if (existsSync(pubIcons)) {
+            cpSync(pubIcons, resolve(dest, 'icons'), { recursive: true });
+          }
+        },
+      },
+    ],
+    // The secret is replaced at build time by this string. Using a bare
+    // identifier avoids Vite's env replacement quirks with dotted keys.
+    define: {
+      __REPOTAP_GITHUB_CLIENT_SECRET__: JSON.stringify(env.REPOTAP_GITHUB_CLIENT_SECRET || ''),
+    },
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      rollupOptions: {
+        input: {
+          popup: resolve(__dirname, 'popup.html'),
+          'content/leetcode': resolve(__dirname, 'src/content/leetcode.js'),
+          'content/hackerrank': resolve(__dirname, 'src/content/hackerrank.js'),
+          'content/geeksforgeeks': resolve(__dirname, 'src/content/geeksforgeeks.js'),
+          'content/page-bridge': resolve(__dirname, 'src/content/page-bridge.js'),
+          'content/toast': resolve(__dirname, 'src/content/toast.js'),
+          'background/service-worker': resolve(__dirname, 'src/background/service-worker.js'),
+        },
+        output: {
+          entryFileNames: (chunk) => {
+            if (chunk.name.includes('content/')) return `${chunk.name}.js`;
+            if (chunk.name.includes('background/')) return `${chunk.name}.js`;
+            return 'popup/[name]-[hash].js';
+          },
+          chunkFileNames: 'chunks/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash][extname]',
+        },
+      },
     },
   };
-}
-
-export default defineConfig({
-  plugins: [react(), copyExtensionFiles()],
-  base: './',
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        popup: resolve(__dirname, 'popup.html'),
-        background: resolve(__dirname, 'src/background/service-worker.js'),
-        bridge: resolve(__dirname, 'src/content/page-bridge.js'),
-        toast: resolve(__dirname, 'src/content/toast.js'),
-        leetcode: resolve(__dirname, 'src/content/leetcode.js'),
-        hackerrank: resolve(__dirname, 'src/content/hackerrank.js'),
-        geeksforgeeks: resolve(__dirname, 'src/content/geeksforgeeks.js'),
-      },
-      output: {
-        entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name === 'background') return 'background/service-worker.js';
-          if (chunkInfo.name === 'bridge') return 'content/page-bridge.js';
-          if (['leetcode', 'hackerrank', 'geeksforgeeks', 'toast'].includes(chunkInfo.name)) {
-            return `content/${chunkInfo.name}.js`;
-          }
-          return '[name]/[name].js';
-        },
-        chunkFileNames: 'chunks/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]',
-        // Prevent rollup from tree-shaking the IIFE globals or emitting module wrappers
-        generatedCode: { constBindings: false },
-      },
-    },
-    minify: false,
-  },
 });

@@ -1,0 +1,910 @@
+{
+  "id": "striver150",
+  "title": "Striver 150",
+  "shortTitle": "S150",
+  "source": "https://takeuforward.org/prep-hub/strivers-150-master-patterns-in-dsa",
+  "description": "Striver's 150 — Master Patterns in DSA (17 topics). Items without a LeetCode link are check-off only.",
+  "sheetVersion": "2026-11",
+  "problems": [
+    {
+      "slug": "move-zeroes",
+      "title": "Move Zeros to End",
+      "difficulty": "Easy",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "remove-duplicates-from-sorted-array",
+      "title": "Remove duplicates from sorted array",
+      "difficulty": "Easy",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "missing-number",
+      "title": "Find missing number",
+      "difficulty": "Easy",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "majority-element",
+      "title": "Majority Element-I",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "maximum-subarray",
+      "title": "Kadane's Algorithm",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "maximum-product-subarray",
+      "title": "Maximum Product Subarray in an Array",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "valid-palindrome",
+      "title": "Palindrome Check",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "sort-colors",
+      "title": "Sort an array of 0's 1's and 2's",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "rearrange-array-elements-by-sign",
+      "title": "Rearrange array elements by sign",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "spiral-matrix",
+      "title": "Print the matrix in spiral manner",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "rotate-image",
+      "title": "Rotate matrix by 90 degrees",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "3sum",
+      "title": "3 Sum",
+      "difficulty": "Medium",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "trapping-rain-water",
+      "title": "Trapping Rainwater",
+      "difficulty": "Hard",
+      "topic": "Arrays"
+    },
+    {
+      "slug": null,
+      "title": "Count Inversions",
+      "difficulty": "Hard",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "reverse-pairs",
+      "title": "Reverse Pairs",
+      "difficulty": "Hard",
+      "topic": "Arrays"
+    },
+    {
+      "slug": "two-sum",
+      "title": "Two Sum",
+      "difficulty": "Easy",
+      "topic": "Hashing"
+    },
+    {
+      "slug": "valid-anagram",
+      "title": "Valid Anagram",
+      "difficulty": "Easy",
+      "topic": "Hashing"
+    },
+    {
+      "slug": "sort-characters-by-frequency",
+      "title": "Sort Characters by Frequency",
+      "difficulty": "Medium",
+      "topic": "Hashing"
+    },
+    {
+      "slug": "longest-consecutive-sequence",
+      "title": "Longest Consecutive Sequence in an Array",
+      "difficulty": "Medium",
+      "topic": "Hashing"
+    },
+    {
+      "slug": "maximum-size-subarray-sum-equals-k",
+      "title": "Longest subarray with sum K",
+      "difficulty": "Medium",
+      "topic": "Hashing"
+    },
+    {
+      "slug": "subarray-sum-equals-k",
+      "title": "Count subarrays with given sum",
+      "difficulty": "Medium",
+      "topic": "Hashing"
+    },
+    {
+      "slug": "binary-subarrays-with-sum",
+      "title": "Binary Subarrays With Sum",
+      "difficulty": "Medium",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "longest-substring-without-repeating-characters",
+      "title": "Longest Substring Without Repeating Characters",
+      "difficulty": "Medium",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "maximum-points-you-can-obtain-from-cards",
+      "title": "Maximum Points You Can Obtain from Cards",
+      "difficulty": "Medium",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "max-consecutive-ones-iii",
+      "title": "Max Consecutive Ones III",
+      "difficulty": "Medium",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "fruit-into-baskets",
+      "title": "Fruit Into Baskets",
+      "difficulty": "Medium",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "longest-repeating-character-replacement",
+      "title": "Longest Repeating Character Replacement",
+      "difficulty": "Hard",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "longest-substring-with-at-most-k-distinct-characters",
+      "title": "Longest Substring With At Most K Distinct Characters",
+      "difficulty": "Hard",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "minimum-window-substring",
+      "title": "Minimum Window Substring",
+      "difficulty": "Hard",
+      "topic": "Sliding Window and Two Pointers"
+    },
+    {
+      "slug": "binary-search",
+      "title": "Search X in sorted array",
+      "difficulty": "Easy",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "search-insert-position",
+      "title": "Search insert position",
+      "difficulty": "Easy",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "find-first-and-last-position-of-element-in-sorted-array",
+      "title": "First and last occurrence",
+      "difficulty": "Medium",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "search-in-rotated-sorted-array",
+      "title": "Search in rotated sorted array-I",
+      "difficulty": "Medium",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "search-a-2d-matrix",
+      "title": "Search in a 2D Matrix",
+      "difficulty": "Medium",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "single-element-in-a-sorted-array",
+      "title": "Single element in sorted array",
+      "difficulty": "Medium",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "find-peak-element",
+      "title": "Find peak element",
+      "difficulty": "Medium",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "find-the-smallest-divisor-given-a-threshold",
+      "title": "Find the smallest divisor",
+      "difficulty": "Medium",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "minimum-number-of-days-to-make-m-bouquets",
+      "title": "Minimum days to make M bouquets",
+      "difficulty": "Hard",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "split-array-largest-sum",
+      "title": "Split array - largest sum",
+      "difficulty": "Hard",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "median-of-two-sorted-arrays",
+      "title": "Median of 2 sorted arrays",
+      "difficulty": "Hard",
+      "topic": "Binary Search"
+    },
+    {
+      "slug": "longest-common-prefix",
+      "title": "Longest Common Prefix",
+      "difficulty": "Medium",
+      "topic": "Strings"
+    },
+    {
+      "slug": "count-and-say",
+      "title": "Count and say",
+      "difficulty": "Medium",
+      "topic": "Strings"
+    },
+    {
+      "slug": "reverse-words-in-a-string",
+      "title": "Reverse every word in a string",
+      "difficulty": "Medium",
+      "topic": "Strings"
+    },
+    {
+      "slug": "minimum-add-to-make-parentheses-valid",
+      "title": "Minimum number of bracket reversals to make an expression balanced",
+      "difficulty": "Medium",
+      "topic": "Strings"
+    },
+    {
+      "slug": "shortest-palindrome",
+      "title": "Shortest Palindrome",
+      "difficulty": "Hard",
+      "topic": "Strings"
+    },
+    {
+      "slug": "valid-parentheses",
+      "title": "Balanced Paranthesis",
+      "difficulty": "Medium",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "implement-queue-using-stacks",
+      "title": "Implement Queue using Stack",
+      "difficulty": "Medium",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "min-stack",
+      "title": "Implement Min Stack",
+      "difficulty": "Medium",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "lru-cache",
+      "title": "LRU Cache",
+      "difficulty": "Hard",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "asteroid-collision",
+      "title": "Asteroid Collision",
+      "difficulty": "Medium",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "lfu-cache",
+      "title": "LFU Cache",
+      "difficulty": "Hard",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "next-greater-element-ii",
+      "title": "Next Greater Element - 2",
+      "difficulty": "Medium",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "sliding-window-maximum",
+      "title": "Sliding Window Maximum",
+      "difficulty": "Hard",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "largest-rectangle-in-histogram",
+      "title": "Largest rectangle in a histogram",
+      "difficulty": "Hard",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "maximal-rectangle",
+      "title": "Maximum Rectangles",
+      "difficulty": "Hard",
+      "topic": "Stack and Queues"
+    },
+    {
+      "slug": "middle-of-the-linked-list",
+      "title": "Find Middle of Linked List",
+      "difficulty": "Easy",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "linked-list-cycle",
+      "title": "Detect a loop in LL",
+      "difficulty": "Medium",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "delete-the-middle-node-of-a-linked-list",
+      "title": "Delete the middle node in LL",
+      "difficulty": "Medium",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "remove-nth-node-from-end-of-list",
+      "title": "Remove Nth node from the back of the LL",
+      "difficulty": "Medium",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "reverse-linked-list",
+      "title": "Reverse a LL",
+      "difficulty": "Medium",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "merge-two-sorted-lists",
+      "title": "Merge two Sorted Lists",
+      "difficulty": "Easy",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "add-two-numbers",
+      "title": "Add two numbers in Linked List",
+      "difficulty": "Medium",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "plus-one-linked-list",
+      "title": "Add one to a number represented by LL",
+      "difficulty": "Medium",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "odd-even-linked-list",
+      "title": "Segregate odd and even nodes in Linked List",
+      "difficulty": "Medium",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "copy-list-with-random-pointer",
+      "title": "Clone a LL with random and next pointer",
+      "difficulty": "Hard",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "reverse-nodes-in-k-group",
+      "title": "Reverse LL in group of given size K",
+      "difficulty": "Hard",
+      "topic": "Linked List"
+    },
+    {
+      "slug": "binary-tree-inorder-traversal",
+      "title": "Inorder Traversal",
+      "difficulty": "Easy",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "maximum-depth-of-binary-tree",
+      "title": "Maximum Depth in BT",
+      "difficulty": "Medium",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "balanced-binary-tree",
+      "title": "Check for balanced binary tree",
+      "difficulty": "Medium",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "diameter-of-binary-tree",
+      "title": "Diameter of Binary Tree",
+      "difficulty": "Medium",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "lowest-common-ancestor-of-a-binary-tree",
+      "title": "LCA in BT",
+      "difficulty": "Hard",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "construct-binary-tree-from-preorder-and-inorder-traversal",
+      "title": "Construct a BT from Preorder and Inorder",
+      "difficulty": "Medium",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "binary-tree-maximum-path-sum",
+      "title": "Maximum path sum",
+      "difficulty": "Hard",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "serialize-and-deserialize-binary-tree",
+      "title": "Serialize and De-serialize BT",
+      "difficulty": "Hard",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "binary-tree-level-order-traversal",
+      "title": "Level Order Traversal",
+      "difficulty": "Medium",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "binary-tree-right-side-view",
+      "title": "Right/Left View of BT",
+      "difficulty": "Medium",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "binary-tree-zigzag-level-order-traversal",
+      "title": "Zig Zag or Spiral Traversal",
+      "difficulty": "Medium",
+      "topic": "Binary Trees"
+    },
+    {
+      "slug": "search-in-a-binary-search-tree",
+      "title": "Search in BST",
+      "difficulty": "Easy",
+      "topic": "Binary Search Trees"
+    },
+    {
+      "slug": "insert-into-a-binary-search-tree",
+      "title": "Insert a given node in BST",
+      "difficulty": "Medium",
+      "topic": "Binary Search Trees"
+    },
+    {
+      "slug": "delete-node-in-a-bst",
+      "title": "Delete a node in BST",
+      "difficulty": "Medium",
+      "topic": "Binary Search Trees"
+    },
+    {
+      "slug": "validate-binary-search-tree",
+      "title": "Check if a tree is a BST or not",
+      "difficulty": "Medium",
+      "topic": "Binary Search Trees"
+    },
+    {
+      "slug": "kth-smallest-element-in-a-bst",
+      "title": "Kth Smallest and Largest element in BST",
+      "difficulty": "Medium",
+      "topic": "Binary Search Trees"
+    },
+    {
+      "slug": "lowest-common-ancestor-of-a-binary-search-tree",
+      "title": "LCA in BST",
+      "difficulty": "Medium",
+      "topic": "Binary Search Trees"
+    },
+    {
+      "slug": "kth-largest-element-in-a-stream",
+      "title": "Kth largest element in a stream of running integers",
+      "difficulty": "Hard",
+      "topic": "Heaps"
+    },
+    {
+      "slug": null,
+      "title": "Heapify Algorithm",
+      "difficulty": "Medium",
+      "topic": "Heaps"
+    },
+    {
+      "slug": null,
+      "title": "Build heap from a given Array",
+      "difficulty": "Medium",
+      "topic": "Heaps"
+    },
+    {
+      "slug": null,
+      "title": "Implement Max Heap",
+      "difficulty": "Medium",
+      "topic": "Heaps"
+    },
+    {
+      "slug": "kth-largest-element-in-an-array",
+      "title": "K-th Largest element in an array",
+      "difficulty": "Hard",
+      "topic": "Heaps"
+    },
+    {
+      "slug": null,
+      "title": "Heap Sort",
+      "difficulty": "Hard",
+      "topic": "Heaps"
+    },
+    {
+      "slug": "subsets",
+      "title": "Subsets I",
+      "difficulty": "Medium",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "generate-parentheses",
+      "title": "Generate Parentheses",
+      "difficulty": "Medium",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "letter-combinations-of-a-phone-number",
+      "title": "Letter Combinations of a Phone Number",
+      "difficulty": "Hard",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "combination-sum",
+      "title": "Combination Sum",
+      "difficulty": "Medium",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": null,
+      "title": "Check if there exists a subsequence with sum K",
+      "difficulty": "Medium",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "combination-sum-iii",
+      "title": "Combination Sum III",
+      "difficulty": "Hard",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "subsets-ii",
+      "title": "Subsets II",
+      "difficulty": "Medium",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "palindrome-partitioning",
+      "title": "Palindrome partitioning",
+      "difficulty": "Hard",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "word-search",
+      "title": "Word Search",
+      "difficulty": "Hard",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "n-queens",
+      "title": "N Queen",
+      "difficulty": "Hard",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": "sudoku-solver",
+      "title": "Sudoku Solver",
+      "difficulty": "Hard",
+      "topic": "Recursion and Backtracking"
+    },
+    {
+      "slug": null,
+      "title": "N meetings in one room",
+      "difficulty": "Medium",
+      "topic": "Greedy Algorithms"
+    },
+    {
+      "slug": "insert-interval",
+      "title": "Insert Interval",
+      "difficulty": "Medium",
+      "topic": "Greedy Algorithms"
+    },
+    {
+      "slug": "non-overlapping-intervals",
+      "title": "Non-overlapping Intervals",
+      "difficulty": "Medium",
+      "topic": "Greedy Algorithms"
+    },
+    {
+      "slug": "jump-game",
+      "title": "Jump Game - I",
+      "difficulty": "Medium",
+      "topic": "Greedy Algorithms"
+    },
+    {
+      "slug": "valid-parenthesis-string",
+      "title": "Valid Paranthesis Checker",
+      "difficulty": "Hard",
+      "topic": "Greedy Algorithms"
+    },
+    {
+      "slug": "candy",
+      "title": "Candy",
+      "difficulty": "Hard",
+      "topic": "Greedy Algorithms"
+    },
+    {
+      "slug": "flood-fill",
+      "title": "Flood fill algorithm",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "number-of-provinces",
+      "title": "Number of provinces",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "number-of-islands",
+      "title": "Number of islands",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "number-of-enclaves",
+      "title": "Number of enclaves",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "rotting-oranges",
+      "title": "Rotten Oranges",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "surrounded-regions",
+      "title": "Surrounded Regions",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "course-schedule",
+      "title": "Detect a cycle in an undirected graph",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "is-graph-bipartite",
+      "title": "Bipartite graph",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "course-schedule",
+      "title": "Course Schedule I",
+      "difficulty": "Hard",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "course-schedule-ii",
+      "title": "Course Schedule II",
+      "difficulty": "Hard",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "find-eventual-safe-states",
+      "title": "Find eventual safe states",
+      "difficulty": "Hard",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "number-of-connected-components-in-an-undirected-graph",
+      "title": "Connected Components",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "accounts-merge",
+      "title": "Accounts merge",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "most-stones-removed-with-same-row-or-column",
+      "title": "Most stones removed with same row or column",
+      "difficulty": "Hard",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "making-a-large-island",
+      "title": "Making a large island",
+      "difficulty": "Hard",
+      "topic": "Graphs"
+    },
+    {
+      "slug": null,
+      "title": "Dijkstra's algorithm",
+      "difficulty": "Medium",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "word-ladder",
+      "title": "Word ladder I",
+      "difficulty": "Hard",
+      "topic": "Graphs"
+    },
+    {
+      "slug": "climbing-stairs",
+      "title": "Climbing stairs",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "best-time-to-buy-and-sell-stock",
+      "title": "Best time to buy and sell stock",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "house-robber",
+      "title": "House robber",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "house-robber",
+      "title": "Maximum sum of non adjacent elements",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "best-time-to-buy-and-sell-stock-ii",
+      "title": "Best time to buy and sell stock II",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "best-time-to-buy-and-sell-stock-with-transaction-fee",
+      "title": "Best time to buy and sell stock with transaction fees",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "coin-change",
+      "title": "Minimum coins",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "unique-paths",
+      "title": "Grid unique paths",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "minimum-falling-path-sum",
+      "title": "Minimum Falling Path Sum",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "triangle",
+      "title": "Triangle",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": null,
+      "title": "Subset sum equals to target",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "partition-equal-subset-sum",
+      "title": "Partition equal subset sum",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "target-sum",
+      "title": "Target sum",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "longest-increasing-subsequence",
+      "title": "Longest Increasing Subsequence",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "longest-common-subsequence",
+      "title": "Longest common subsequence",
+      "difficulty": "Medium",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "edit-distance",
+      "title": "Edit distance",
+      "difficulty": "Hard",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "distinct-subsequences",
+      "title": "Distinct subsequences",
+      "difficulty": "Hard",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "wildcard-matching",
+      "title": "Wildcard matching",
+      "difficulty": "Hard",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "palindrome-partitioning-ii",
+      "title": "Palindrome partitioning II",
+      "difficulty": "Hard",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "burst-balloons",
+      "title": "Burst balloons",
+      "difficulty": "Hard",
+      "topic": "Dynamic Programming"
+    },
+    {
+      "slug": "implement-trie-prefix-tree",
+      "title": "Trie Implementation and Operations",
+      "difficulty": "Medium",
+      "topic": "Tries"
+    },
+    {
+      "slug": "implement-trie-ii-prefix-tree",
+      "title": "Trie Implementation and Advanced Operations",
+      "difficulty": "Medium",
+      "topic": "Tries"
+    },
+    {
+      "slug": "longest-word-with-all-prefixes",
+      "title": "Longest Word with All Prefixes",
+      "difficulty": "Medium",
+      "topic": "Tries"
+    },
+    {
+      "slug": "minimum-bit-flips-to-convert-number",
+      "title": "Minimum Bit Flips to Convert Number",
+      "difficulty": "Easy",
+      "topic": "Bit Manipulation"
+    },
+    {
+      "slug": "single-number",
+      "title": "Single Number - I",
+      "difficulty": "Easy",
+      "topic": "Bit Manipulation"
+    },
+    {
+      "slug": "single-number-ii",
+      "title": "Single Number - II",
+      "difficulty": "Medium",
+      "topic": "Bit Manipulation"
+    },
+    {
+      "slug": "powx-n",
+      "title": "Pow(x,n)",
+      "difficulty": "Medium",
+      "topic": "Mathematics"
+    }
+  ]
+}

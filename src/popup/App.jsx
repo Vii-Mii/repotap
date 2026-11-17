@@ -3,12 +3,13 @@ import Header from './components/Header.jsx';
 import CommitReview from './pages/CommitReview.jsx';
 import History from './pages/History.jsx';
 import Settings from './pages/Settings.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 import EmptyState from './components/EmptyState.jsx';
 import CommitSuccess from './components/CommitSuccess.jsx';
 
 export default function App() {
   const [theme, setTheme] = useState('dark');
-  const [page, setPage] = useState('commit'); // 'commit' | 'history' | 'settings'
+  const [page, setPage] = useState('commit'); // 'dashboard' | 'commit' | 'history' | 'settings'
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [commitResult, setCommitResult] = useState(null);
@@ -125,6 +126,7 @@ export default function App() {
             />
           )
         )}
+        {page === 'dashboard' && <Dashboard />}
         {page === 'history' && <History />}
         {page === 'settings' && <Settings />}
       </div>
